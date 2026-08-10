@@ -1,0 +1,73 @@
+---
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const headings = Astro.props.headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+---
+
+{
+  headings.length > 0 && (
+    <nav class="toc" aria-label="文章目录">
+      <p>本文目录</p>
+      <ol>
+        {headings.map((heading) => (
+          <li class:list={{ 'toc__sub': heading.depth === 3 }}>
+            <a href={`#${heading.slug}`}>{heading.text}</a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}
+
+<style>
+  .toc {
+    position: sticky;
+    top: 96px;
+    max-height: calc(100vh - 124px);
+    padding-left: 18px;
+    overflow: auto;
+    border-left: 1px solid var(--border);
+  }
+
+  p {
+    margin: 0 0 10px;
+    color: var(--text-strong);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    margin: 7px 0;
+  }
+
+  .toc__sub {
+    padding-left: 13px;
+  }
+
+  a {
+    display: block;
+    color: var(--muted-2);
+    font-size: 12px;
+    line-height: 1.5;
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--accent-strong);
+  }
+</style>
+

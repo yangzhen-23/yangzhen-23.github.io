@@ -1,0 +1,20 @@
+---
+import { getCollection } from 'astro:content';
+import SearchPanel from '../components/SearchPanel.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { isPublished, sortPosts } from '../lib/content';
+
+const posts = sortPosts((await getCollection('blog')).filter((entry) => isPublished(entry)));
+---
+
+<BaseLayout title="搜索" description="搜索 YangZhen 的博客文章。">
+  <header class="page-header shell">
+    <p class="eyebrow">Search</p>
+    <h1>搜索文章</h1>
+    <p>按标题、摘要、分类或标签查找。所有搜索都在浏览器本地完成。</p>
+  </header>
+  <div class="shell search-page"><SearchPanel posts={posts} /></div>
+</BaseLayout>
+
+<style>.search-page { padding-bottom: 70px; }</style>
+

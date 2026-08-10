@@ -1,0 +1,29 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { isPublished, sortPosts, uniqueCategories } from '../../lib/content';
+
+const posts = sortPosts((await getCollection('blog')).filter((entry) => isPublished(entry)));
+const categories = uniqueCategories(posts);
+---
+
+<BaseLayout title="分类" description="按分类浏览博客文章。">
+  <header class="page-header shell">
+    <p class="eyebrow">Categories</p>
+    <h1>文章分类</h1>
+    <p>按内容用途整理：论文阅读、项目实践，以及其他值得留下的笔记。</p>
+  </header>
+  <section class="category-list shell">
+    {categories.map((item, index) => <a href={`/categories/${item.slug}/`}><span class="number">0{index + 1}</span><strong>{item.label}</strong><small>{item.count} 篇文章</small><span aria-hidden="true">→</span></a>)}
+  </section>
+</BaseLayout>
+
+<style>
+  .category-list { padding-bottom: 70px; border-top: 1px solid var(--border); }
+  .category-list a { display: grid; min-height: 92px; padding: 20px 4px; align-items: center; border-bottom: 1px solid var(--border); grid-template-columns: 62px 1fr auto 34px; gap: 18px; text-decoration: none; }
+  .category-list .number { color: var(--accent); font-family: var(--font-serif); }
+  .category-list strong { color: var(--text-strong); font-family: var(--font-serif); font-size: 21px; }
+  .category-list small { color: var(--muted-2); }
+  @media (max-width: 560px) { .category-list a { grid-template-columns: 42px 1fr 24px; } .category-list small { display: none; } }
+</style>
+

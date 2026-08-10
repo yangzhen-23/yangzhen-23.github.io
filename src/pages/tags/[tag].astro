@@ -1,0 +1,32 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import ArticleCard from '../../components/ArticleCard.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { isPublished, sortPosts, uniqueTags } from '../../lib/content';
+
+interface Props { label: string; posts: CollectionEntry<'blog'>[] }
+
+export async function getStaticPaths() {
+  const posts = sortPosts((await getCollection('blog')).filter((entry) => isPublished(entry)));
+  return uniqueTags(posts).map((tag) => ({
+    params: { tag: decodeURIComponent(tag.slug) },
+    props: { label: tag.label, posts: posts.filter((post) => post.data.tags.includes(tag.label)) },
+  }));
+}
+
+const { label, posts } = Astro.props;
+---
+
+<BaseLayout title={`标签：${label}`} description={`带有“${label}”标签的文章。`}>
+  <header class="page-header shell">
+    <p class="eyebrow">Tag</p>
+    <h1>#{label}</h1>
+    <p>共 {posts.length} 篇文章。</p>
+  </header>
+  <section class="facet-posts shell">
+    {posts.map((post) => <ArticleCard post={post} />)}
+  </section>
+</BaseLayout>
+
+<style>.facet-posts { display: grid; padding-bottom: 70px; gap: 18px; }</style>
+

@@ -1,0 +1,274 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import TableOfContents from '../components/TableOfContents.astro';
+import BaseLayout from './BaseLayout.astro';
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+  headings: Heading[];
+  previous?: CollectionEntry<'blog'>;
+  next?: CollectionEntry<'blog'>;
+}
+
+const { post, headings, previous, next } = Astro.props;
+const published = post.data.publishedAt.toLocaleDateString('zh-CN', {
+  year: 'numeric', month: 'long', day: 'numeric',
+});
+const readingMinutes = Math.max(1, Math.ceil((post.body?.replace(/\s/g, '').length ?? 0) / 400));
+---
+
+<BaseLayout title={post.data.title} description={post.data.description} image={post.data.cover} type="article">
+  <article class="post">
+    <header class="post-header reading-shell">
+      <a class="post-header__category" href={`/categories/${encodeURIComponent(post.data.category)}/`}>{post.data.category}</a>
+      <h1>{post.data.title}</h1>
+      <p>{post.data.description}</p>
+      <div class="post-header__meta">
+        <time datetime={post.data.publishedAt.toISOString()}>{published}</time>
+        <span>{readingMinutes} 分钟阅读</span>
+        {post.data.updatedAt && <span>更新于 {post.data.updatedAt.toLocaleDateString('zh-CN')}</span>}
+      </div>
+      <ul class="tag-list" aria-label="文章标签">
+        {post.data.tags.map((tag) => <li><a class="tag" href={`/tags/${encodeURIComponent(tag)}/`}>#{tag}</a></li>)}
+      </ul>
+    </header>
+
+    <div class="post-layout shell">
+      <div class="post-body prose">
+        <slot />
+      </div>
+      <aside class="post-aside">
+        <TableOfContents headings={headings} />
+      </aside>
+    </div>
+
+    <footer class="post-footer reading-shell">
+      <div class="post-footer__note">
+        <strong>写在最后</strong>
+        <p>事实、论文原结论与个人判断会尽量分开表达。如果你发现问题，欢迎通过 GitHub 或邮箱交流。</p>
+      </div>
+      <nav aria-label="相邻文章">
+        {previous ? <a href={`/blog/${previous.id}/`}><span>上一篇</span><strong>{previous.data.title}</strong></a> : <span></span>}
+        {next ? <a href={`/blog/${next.id}/`}><span>下一篇</span><strong>{next.data.title}</strong></a> : <span></span>}
+      </nav>
+    </footer>
+  </article>
+</BaseLayout>
+
+<style>
+  .post-header {
+    padding-block: 86px 58px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .post-header__category {
+    color: var(--accent-strong);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .post-header h1 {
+    margin: 17px 0 20px;
+    color: var(--text-strong);
+    font-family: var(--font-serif);
+    font-size: clamp(2.25rem, 6vw, 4.5rem);
+    letter-spacing: -0.05em;
+    line-height: 1.22;
+  }
+
+  .post-header > p {
+    max-width: 660px;
+    margin: 0 0 22px;
+    color: var(--muted);
+    font-size: 17px;
+  }
+
+  .post-header__meta {
+    display: flex;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    color: var(--muted-2);
+    font-size: 12px;
+  }
+
+  .post-layout {
+    display: grid;
+    padding-block: 60px 48px;
+    grid-template-columns: minmax(0, var(--reading)) 220px;
+    justify-content: center;
+    gap: 68px;
+  }
+
+  .post-body {
+    min-width: 0;
+  }
+
+  .prose :global(h2),
+  .prose :global(h3),
+  .prose :global(h4) {
+    scroll-margin-top: 92px;
+    color: var(--text-strong);
+    font-family: var(--font-serif);
+    line-height: 1.4;
+  }
+
+  .prose :global(h2) {
+    margin: 2.8em 0 0.8em;
+    padding-bottom: 0.35em;
+    border-bottom: 1px solid var(--border);
+    font-size: 1.9rem;
+  }
+
+  .prose :global(h3) {
+    margin: 2.1em 0 0.7em;
+    font-size: 1.42rem;
+  }
+
+  .prose :global(p),
+  .prose :global(li) {
+    color: #c4ccd9;
+  }
+
+  .prose :global(p) {
+    margin: 1.15em 0;
+  }
+
+  .prose :global(strong) {
+    color: var(--text-strong);
+  }
+
+  .prose :global(blockquote) {
+    margin: 1.8em 0;
+    padding: 4px 0 4px 20px;
+    border-left: 3px solid var(--accent);
+    color: var(--muted);
+  }
+
+  .prose :global(img) {
+    width: 100%;
+    margin: 2em auto 0.7em;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  .prose :global(table) {
+    width: 100%;
+    margin: 2em 0;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .prose :global(th),
+  .prose :global(td) {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    text-align: left;
+  }
+
+  .prose :global(th) {
+    background: var(--surface-2);
+    color: var(--text-strong);
+  }
+
+  .prose :global(pre) {
+    overflow-x: auto;
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  .prose :global(:not(pre) > code) {
+    padding: 0.15em 0.4em;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--surface);
+    color: var(--accent-strong);
+  }
+
+  .prose :global(.katex-display) {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .post-footer {
+    padding-block: 30px 80px;
+  }
+
+  .post-footer__note {
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .post-footer__note p {
+    margin: 5px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .post-footer nav {
+    display: grid;
+    margin-top: 30px;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .post-footer nav a {
+    display: flex;
+    min-height: 92px;
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    flex-direction: column;
+    text-decoration: none;
+  }
+
+  .post-footer nav a:last-child {
+    text-align: right;
+  }
+
+  .post-footer nav span {
+    color: var(--muted-2);
+    font-size: 12px;
+  }
+
+  .post-footer nav strong {
+    margin-top: 5px;
+    color: var(--text-strong);
+    font-size: 14px;
+  }
+
+  @media (max-width: 980px) {
+    .post-layout {
+      grid-template-columns: minmax(0, var(--reading));
+    }
+
+    .post-aside {
+      display: none;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .post-header {
+      padding-block: 62px 42px;
+    }
+
+    .post-layout {
+      padding-top: 38px;
+    }
+
+    .post-footer nav {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

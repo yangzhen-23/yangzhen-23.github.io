@@ -1,0 +1,110 @@
+---
+import { getCollection } from 'astro:content';
+import ArticleCard from '../../components/ArticleCard.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { isPublished, sortPosts, uniqueCategories, uniqueTags } from '../../lib/content';
+
+const posts = sortPosts((await getCollection('blog')).filter((entry) => isPublished(entry)));
+const tags = uniqueTags(posts);
+const categories = uniqueCategories(posts);
+---
+
+<BaseLayout title="博客" description="论文阅读、项目实践与技术思考。">
+  <header class="page-header shell">
+    <p class="eyebrow">Writing</p>
+    <h1>博客文章</h1>
+    <p>不追求快速摘抄。尽量从问题出发，把方法、证据和自己的判断写清楚。</p>
+  </header>
+
+  <section class="blog-layout shell">
+    <div class="blog-list">
+      {posts.length > 0 ? posts.map((post) => <ArticleCard post={post} />) : <p class="empty">文章正在整理中。</p>}
+    </div>
+    <aside class="blog-sidebar">
+      <section>
+        <h2>分类</h2>
+        <ul>{categories.map((item) => <li><a href={`/categories/${item.slug}/`}><span>{item.label}</span><small>{item.count}</small></a></li>)}</ul>
+      </section>
+      <section>
+        <h2>标签</h2>
+        <div class="tag-list">{tags.map((item) => <a class="tag" href={`/tags/${item.slug}/`}>#{item.label} · {item.count}</a>)}</div>
+      </section>
+      <section class="blog-sidebar__links">
+        <a href="/archive/">按时间归档</a>
+        <a href="/search/">站内搜索</a>
+        <a href="/rss.xml">订阅 RSS</a>
+      </section>
+    </aside>
+  </section>
+</BaseLayout>
+
+<style>
+  .blog-layout {
+    display: grid;
+    padding-block: 20px 70px;
+    grid-template-columns: minmax(0, 1fr) 260px;
+    gap: 34px;
+  }
+
+  .blog-list {
+    display: grid;
+    gap: 18px;
+  }
+
+  .empty {
+    padding: 30px;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+    color: var(--muted);
+  }
+
+  .blog-sidebar {
+    align-self: start;
+  }
+
+  .blog-sidebar section {
+    margin-bottom: 16px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    background: rgba(17, 24, 39, 0.66);
+  }
+
+  .blog-sidebar h2 {
+    margin: 0 0 12px;
+    color: var(--text-strong);
+    font-size: 14px;
+  }
+
+  .blog-sidebar ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .blog-sidebar li a,
+  .blog-sidebar__links a {
+    display: flex;
+    min-height: 38px;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 13px;
+    text-decoration: none;
+  }
+
+  .blog-sidebar small {
+    color: var(--muted-2);
+  }
+
+  .blog-sidebar__links {
+    display: grid;
+  }
+
+  @media (max-width: 860px) {
+    .blog-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+

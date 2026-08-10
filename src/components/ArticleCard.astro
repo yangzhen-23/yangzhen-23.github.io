@@ -1,0 +1,106 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+  compact?: boolean;
+}
+
+const { post, compact = false } = Astro.props;
+const readingMinutes = Math.max(1, Math.ceil((post.body?.replace(/\s/g, '').length ?? 0) / 400));
+const published = post.data.publishedAt.toLocaleDateString('zh-CN', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<article class:list={['article-card', { 'article-card--compact': compact }]}>
+  <div class="article-card__meta">
+    <a href={`/categories/${encodeURIComponent(post.data.category)}/`}>{post.data.category}</a>
+    <span aria-hidden="true">·</span>
+    <time datetime={post.data.publishedAt.toISOString()}>{published}</time>
+    <span aria-hidden="true">·</span>
+    <span>{readingMinutes} 分钟阅读</span>
+  </div>
+  <h2><a href={`/blog/${post.id}/`}>{post.data.title}</a></h2>
+  <p>{post.data.description}</p>
+  <ul class="tag-list" aria-label="文章标签">
+    {post.data.tags.map((tag) => <li><a class="tag" href={`/tags/${encodeURIComponent(tag)}/`}>#{tag}</a></li>)}
+  </ul>
+  <a class="article-card__more" href={`/blog/${post.id}/`} aria-label={`阅读《${post.data.title}》`}>
+    阅读文章 <span aria-hidden="true">→</span>
+  </a>
+</article>
+
+<style>
+  .article-card {
+    position: relative;
+    padding: 27px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: linear-gradient(145deg, rgba(23, 32, 51, 0.76), rgba(17, 24, 39, 0.75));
+  }
+
+  .article-card:hover {
+    border-color: var(--border-strong);
+  }
+
+  .article-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    color: var(--muted-2);
+    font-size: 12px;
+  }
+
+  .article-card__meta a {
+    color: var(--accent-strong);
+    text-decoration: none;
+  }
+
+  h2 {
+    margin: 13px 0 10px;
+    color: var(--text-strong);
+    font-family: var(--font-serif);
+    font-size: clamp(1.35rem, 3vw, 1.8rem);
+    line-height: 1.4;
+  }
+
+  h2 a {
+    text-decoration: none;
+  }
+
+  p {
+    margin: 0 0 20px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .article-card__more {
+    display: inline-flex;
+    min-height: 44px;
+    margin-top: 14px;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent-strong);
+    font-size: 14px;
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  .article-card--compact {
+    padding: 22px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .article-card {
+      transition: border-color 160ms ease, transform 160ms ease;
+    }
+
+    .article-card:hover {
+      transform: translateY(-2px);
+    }
+  }
+</style>
+

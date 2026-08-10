@@ -1,0 +1,134 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  posts: CollectionEntry<'blog'>[];
+}
+
+const { posts } = Astro.props;
+---
+
+<section class="search-panel">
+  <label for="site-search">搜索文章</label>
+  <div class="search-panel__input">
+    <span aria-hidden="true">⌕</span>
+    <input id="site-search" type="search" placeholder="输入标题、主题或标签" autocomplete="off" data-search-input />
+  </div>
+  <p class="search-panel__count" aria-live="polite" data-search-count>共 {posts.length} 篇文章</p>
+
+  <div class="search-results" data-search-results>
+    {
+      posts.map((post) => (
+        <article
+          data-search-item
+          data-search-text={`${post.data.title} ${post.data.description} ${post.data.category} ${post.data.tags.join(' ')}`.toLocaleLowerCase('zh-CN')}
+        >
+          <p>{post.data.category} · {post.data.publishedAt.toLocaleDateString('zh-CN')}</p>
+          <h2><a href={`/blog/${post.id}/`}>{post.data.title}</a></h2>
+          <span>{post.data.description}</span>
+        </article>
+      ))
+    }
+  </div>
+
+  <p class="search-panel__empty" hidden data-search-empty>没有找到匹配的文章。换一个关键词试试。</p>
+</section>
+
+<script>
+  const input = document.querySelector<HTMLInputElement>('[data-search-input]');
+  const items = [...document.querySelectorAll<HTMLElement>('[data-search-item]')];
+  const count = document.querySelector<HTMLElement>('[data-search-count]');
+  const empty = document.querySelector<HTMLElement>('[data-search-empty]');
+
+  input?.addEventListener('input', () => {
+    const query = input.value.trim().toLocaleLowerCase('zh-CN');
+    let visible = 0;
+
+    for (const item of items) {
+      const matches = !query || item.dataset.searchText?.includes(query) === true;
+      item.hidden = !matches;
+      if (matches) visible += 1;
+    }
+
+    if (count) count.textContent = query ? `找到 ${visible} 篇文章` : `共 ${items.length} 篇文章`;
+    if (empty) empty.hidden = visible > 0;
+  });
+</script>
+
+<style>
+  .search-panel > label {
+    display: block;
+    margin-bottom: 9px;
+    color: var(--text-strong);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .search-panel__input {
+    display: flex;
+    max-width: 760px;
+    min-height: 56px;
+    padding-inline: 18px;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 13px;
+    background: var(--surface);
+  }
+
+  .search-panel__input:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(135, 152, 255, 0.12);
+  }
+
+  input {
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--text-strong);
+  }
+
+  input::placeholder {
+    color: var(--muted-2);
+  }
+
+  .search-panel__count,
+  .search-panel__empty {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .search-results {
+    margin-top: 28px;
+    border-top: 1px solid var(--border);
+  }
+
+  article {
+    padding-block: 25px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  article[hidden] {
+    display: none;
+  }
+
+  article p,
+  article span {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  article h2 {
+    margin: 5px 0 7px;
+    font-family: var(--font-serif);
+    font-size: 21px;
+  }
+
+  article h2 a {
+    text-decoration: none;
+  }
+</style>
+
