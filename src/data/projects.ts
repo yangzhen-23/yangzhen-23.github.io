@@ -13,7 +13,7 @@ export const PROJECTS: Project[] = [
     url: 'https://github.com/yangzhen-23/video-to-live-photo.git',
     tags: ['Python', '个人开发', ],
     featured: true,
-  }
+  },
   {
     name: 'Academic-Detective',
     description: '基于公开信息构建证据链、生成学术背景核查报告的开源工具。',
