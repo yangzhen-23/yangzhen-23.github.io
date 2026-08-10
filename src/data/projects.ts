@@ -9,9 +9,9 @@ export interface Project {
 export const PROJECTS: Project[] = [
   {
     name: 'video-to-live-photo',
-    description: '将视频转化为动图的PC程序。',
-    url: 'https://github.com/yangzhen-23/video-to-live-photo.git',
-    tags: ['Python', '个人开发', ],
+    description: '将普通视频转换为 Live Photo 或 GIF 动图的 Windows 桌面工具。',
+    url: 'https://github.com/yangzhen-23/video-to-live-photo',
+    tags: ['Python', '个人开发'],
     featured: true,
   },
   {
