@@ -1,0 +1,19 @@
+---
+import ProjectCard from '../components/ProjectCard.astro';
+import { PROJECTS } from '../data/projects';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="项目" description="YangZhen 的公开项目与学习实践。">
+  <header class="page-header shell">
+    <p class="eyebrow">Projects</p>
+    <h1>项目与实践</h1>
+    <p>从科研工作流、桌面应用到计算机视觉与强化学习。这些卡片只呈现公开仓库已经确认的信息。</p>
+  </header>
+  <section class="section shell" aria-label="公开项目列表">
+    <div class="card-grid">
+      {PROJECTS.map((project) => <ProjectCard project={project} />)}
+    </div>
+  </section>
+</BaseLayout>
+

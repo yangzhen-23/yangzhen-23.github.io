@@ -1,0 +1,85 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../lib/site';
+---
+
+<BaseLayout title="关于" description="关于 YangZhen 与这个网站。">
+  <header class="page-header shell">
+    <p class="eyebrow">About</p>
+    <h1>关于我与这个网站</h1>
+    <p>这里不急着写一份完整简历。先放下正在做的项目、真正读过的文章，以及那些值得继续追问的问题。</p>
+  </header>
+
+  <section class="about-grid shell">
+    <div class="about-copy">
+      <h2>你好，我是 YangZhen。</h2>
+      <p>我把这里当成一个长期维护的数字空间：项目不是最终答案，笔记也不是资料堆积。每次更新，都尽量说明问题是什么、证据在哪里，以及我为什么得到当前的判断。</p>
+      <p>网站会从技术阅读和公开项目开始逐步生长。比起迅速填满栏目，我更在意每一页是否真实、清楚，并且过一段时间仍然值得回来重读。</p>
+    </div>
+    <dl class="identity-card">
+      <div><dt>名称</dt><dd>YangZhen</dd></div>
+      <div><dt>GitHub</dt><dd><a href={SITE.github} target="_blank" rel="noreferrer">yangzhen-23 ↗</a></dd></div>
+      <div><dt>ORCID</dt><dd><a href={SITE.orcid} target="_blank" rel="noreferrer">0009-0004-3322-2117 ↗</a></dd></div>
+      <div><dt>邮箱</dt><dd><a href={SITE.email}>yangzhen@stu.ncst.edu.cn</a></dd></div>
+    </dl>
+  </section>
+</BaseLayout>
+
+<style>
+  .about-grid {
+    display: grid;
+    padding-block: 28px 64px;
+    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+    gap: clamp(46px, 8vw, 110px);
+  }
+
+  .about-copy h2 {
+    margin-top: 0;
+    color: var(--text-strong);
+    font-family: var(--font-serif);
+    font-size: clamp(1.7rem, 4vw, 2.6rem);
+  }
+
+  .about-copy p {
+    color: var(--muted);
+  }
+
+  .identity-card {
+    margin: 0;
+    padding: 8px 24px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  .identity-card div {
+    display: grid;
+    padding-block: 18px;
+    border-bottom: 1px solid var(--border);
+    grid-template-columns: 86px 1fr;
+    gap: 16px;
+  }
+
+  .identity-card div:last-child {
+    border-bottom: 0;
+  }
+
+  dt {
+    color: var(--muted-2);
+    font-size: 13px;
+  }
+
+  dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+    color: var(--text-strong);
+  }
+
+  @media (max-width: 780px) {
+    .about-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+

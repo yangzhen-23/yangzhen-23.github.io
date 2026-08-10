@@ -1,0 +1,120 @@
+---
+import type { Project } from '../data/projects';
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+---
+
+<article class="project-card">
+  <div class="project-card__top">
+    <span class="project-card__icon" aria-hidden="true">{project.name.slice(0, 2).toUpperCase()}</span>
+    <span class="project-card__status">Public</span>
+  </div>
+  <h2>{project.name}</h2>
+  <p>{project.description}</p>
+  <ul class="tag-list" aria-label={`${project.name} 技术标签`}>
+    {project.tags.map((tag) => <li class="tag">{tag}</li>)}
+  </ul>
+  <a class="project-card__link" href={project.url} target="_blank" rel="noreferrer">
+    查看 GitHub <span aria-hidden="true">↗</span>
+  </a>
+</article>
+
+<style>
+  .project-card {
+    position: relative;
+    display: flex;
+    min-height: 300px;
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: linear-gradient(145deg, rgba(23, 32, 51, 0.92), rgba(17, 24, 39, 0.88));
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.12);
+    flex-direction: column;
+  }
+
+  .project-card::before {
+    position: absolute;
+    top: 0;
+    right: 22px;
+    left: 22px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(135, 152, 255, 0.65), transparent);
+    content: "";
+    opacity: 0;
+  }
+
+  .project-card:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-3px);
+  }
+
+  .project-card:hover::before {
+    opacity: 1;
+  }
+
+  .project-card__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .project-card__icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    background: rgba(135, 152, 255, 0.09);
+    color: var(--accent-strong);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+  }
+
+  .project-card__status {
+    color: var(--muted-2);
+    font-size: 12px;
+  }
+
+  h2 {
+    margin: 24px 0 10px;
+    color: var(--text-strong);
+    font-size: 21px;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 0 0 22px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .tag-list {
+    margin-top: auto;
+  }
+
+  .project-card__link {
+    display: inline-flex;
+    min-height: 44px;
+    margin-top: 22px;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent-strong);
+    font-size: 14px;
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .project-card,
+    .project-card::before {
+      transition: border-color 180ms ease, transform 180ms ease, opacity 180ms ease;
+    }
+  }
+</style>
+
