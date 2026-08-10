@@ -1,7 +1,7 @@
 node_modules/
+.npm-cache/
 dist/
 .astro/
 .superpowers/
 .DS_Store
 *.log
-
