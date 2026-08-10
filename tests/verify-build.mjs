@@ -37,6 +37,7 @@ for (const htmlPath of collectHtml(root)) {
 
   if (/\b(?:href|src)=["']undefined["']/.test(html)) errors.push(`undefined URL: ${relativePath}`);
   if (/https?:\/\/localhost(?::\d+)?/.test(html)) errors.push(`localhost URL: ${relativePath}`);
+  if (!html.includes('data-particle-background')) errors.push(`missing particle background: ${relativePath}`);
 }
 
 if (errors.length > 0) {

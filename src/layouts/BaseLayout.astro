@@ -3,6 +3,7 @@ import 'katex/dist/katex.min.css';
 import '../styles/global.css';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
+import ParticleBackground from '../components/ParticleBackground.astro';
 import { SITE } from '../lib/site';
 
 interface Props {
@@ -52,6 +53,7 @@ const personJsonLd = {
   </head>
   <body>
     <a class="skip-link" href="#main-content">跳到正文</a>
+    <ParticleBackground />
     <Header />
     <main id="main-content">
       <slot />

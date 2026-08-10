@@ -1,0 +1,164 @@
+<canvas class="particle-background" data-particle-background aria-hidden="true"></canvas>
+
+<script>
+  import {
+    advanceParticle,
+    particleCount,
+    type Particle,
+    type PointerPosition,
+  } from '../lib/particle-field';
+
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-particle-background]');
+  const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  function createParticle(width: number, height: number): Particle {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 0.1 + Math.random() * 0.24;
+
+    return {
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      radius: 0.8 + Math.random() * 1.35,
+    };
+  }
+
+  function startParticleField(target: HTMLCanvasElement): () => void {
+    const context = target.getContext('2d');
+    if (!context) return () => undefined;
+
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    let mobile = window.matchMedia('(max-width: 760px)').matches;
+    let particles: Particle[] = [];
+    let frame = 0;
+    const pointer: PointerPosition = { x: 0, y: 0, active: false };
+
+    const resize = () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      mobile = window.matchMedia('(max-width: 760px)').matches;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+      target.width = Math.round(width * dpr);
+      target.height = Math.round(height * dpr);
+      target.style.width = `${width}px`;
+      target.style.height = `${height}px`;
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      particles = Array.from(
+        { length: particleCount(width, height, mobile) },
+        () => createParticle(width, height),
+      );
+    };
+
+    const draw = () => {
+      context.clearRect(0, 0, width, height);
+      const linkDistance = mobile ? 118 : 158;
+      const motion = {
+        repulseRadius: mobile ? 96 : 142,
+        repulseStrength: mobile ? 0.22 : 0.32,
+        maxSpeed: mobile ? 0.9 : 1.2,
+      };
+
+      particles = particles.map((particle) =>
+        advanceParticle(particle, { width, height }, pointer, motion),
+      );
+
+      for (let first = 0; first < particles.length; first += 1) {
+        for (let second = first + 1; second < particles.length; second += 1) {
+          const a = particles[first];
+          const b = particles[second];
+          if (!a || !b) continue;
+
+          const distance = Math.hypot(a.x - b.x, a.y - b.y);
+          if (distance >= linkDistance) continue;
+
+          const alpha = (1 - distance / linkDistance) * 0.19;
+          context.beginPath();
+          context.moveTo(a.x, a.y);
+          context.lineTo(b.x, b.y);
+          context.strokeStyle = `rgba(135, 152, 255, ${alpha})`;
+          context.lineWidth = 0.7;
+          context.stroke();
+        }
+      }
+
+      particles.forEach((particle, index) => {
+        context.beginPath();
+        context.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        context.fillStyle = index % 3 === 0
+          ? 'rgba(166, 178, 255, 0.58)'
+          : 'rgba(139, 109, 216, 0.46)';
+        context.fill();
+      });
+
+      frame = window.requestAnimationFrame(draw);
+    };
+
+    const updatePointer = (event: PointerEvent) => {
+      pointer.x = event.clientX;
+      pointer.y = event.clientY;
+      pointer.active = event.pointerType !== 'touch';
+    };
+
+    const clearPointer = () => {
+      pointer.active = false;
+    };
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        window.cancelAnimationFrame(frame);
+        frame = 0;
+      } else if (frame === 0) {
+        frame = window.requestAnimationFrame(draw);
+      }
+    };
+
+    resize();
+    frame = window.requestAnimationFrame(draw);
+    window.addEventListener('resize', resize, { passive: true });
+    window.addEventListener('pointermove', updatePointer, { passive: true });
+    window.addEventListener('pointerout', (event) => {
+      if (!event.relatedTarget) clearPointer();
+    });
+    window.addEventListener('blur', clearPointer);
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('pointermove', updatePointer);
+      window.removeEventListener('blur', clearPointer);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      context.clearRect(0, 0, width, height);
+    };
+  }
+
+  if (canvas && !motionPreference.matches) {
+    const stop = startParticleField(canvas);
+    window.addEventListener('pagehide', stop, { once: true });
+    motionPreference.addEventListener('change', (event) => {
+      if (event.matches) stop();
+    }, { once: true });
+  }
+</script>
+
+<style>
+  .particle-background {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    opacity: 0.86;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .particle-background {
+      display: none;
+    }
+  }
+</style>
