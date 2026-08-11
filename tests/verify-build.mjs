@@ -6,6 +6,7 @@ const requiredFiles = [
   'index.html',
   'projects/index.html',
   'blog/index.html',
+  'blog/graduate-study-expectations/index.html',
   'blog/huge-bench-high-level-uav-vla/index.html',
   'about/index.html',
   'archive/index.html',
