@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import ReadingToolbar from '../components/ReadingToolbar.astro';
 import TableOfContents from '../components/TableOfContents.astro';
 import BaseLayout from './BaseLayout.astro';
 
@@ -24,7 +25,7 @@ const readingMinutes = Math.max(1, Math.ceil((post.body?.replace(/\s/g, '').leng
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description} image={post.data.cover} type="article">
-  <article class="post">
+  <article class="post" data-reading-size="medium" data-reading-width="narrow" data-reading-toc="visible">
     <header class="post-header reading-shell">
       <a class="post-header__category" href={`/categories/${encodeURIComponent(post.data.category)}/`}>{post.data.category}</a>
       <h1>{post.data.title}</h1>
@@ -58,6 +59,7 @@ const readingMinutes = Math.max(1, Math.ceil((post.body?.replace(/\s/g, '').leng
         {next ? <a href={`/blog/${next.id}/`}><span>下一篇</span><strong>{next.data.title}</strong></a> : <span></span>}
       </nav>
     </footer>
+    <ReadingToolbar />
   </article>
 </BaseLayout>
 
@@ -109,6 +111,32 @@ const readingMinutes = Math.max(1, Math.ceil((post.body?.replace(/\s/g, '').leng
 
   .post-body {
     min-width: 0;
+    font-size: 16px;
+    transition: font-size 160ms ease;
+  }
+
+  .post[data-reading-size="small"] .post-body { font-size: 15px; }
+  .post[data-reading-size="large"] .post-body { font-size: 18px; }
+
+  .post[data-reading-width="wide"] .post-layout {
+    grid-template-columns: minmax(0, 88ch) 220px;
+  }
+
+  .post[data-reading-width="wide"] .post-header,
+  .post[data-reading-width="wide"] .post-footer {
+    width: min(calc(100% - 40px), 88ch);
+  }
+
+  .post[data-reading-toc="hidden"] .post-layout {
+    grid-template-columns: minmax(0, var(--reading));
+  }
+
+  .post[data-reading-width="wide"][data-reading-toc="hidden"] .post-layout {
+    grid-template-columns: minmax(0, 88ch);
+  }
+
+  .post[data-reading-toc="hidden"] .post-aside {
+    display: none;
   }
 
   .prose :global(h2),
@@ -249,8 +277,15 @@ const readingMinutes = Math.max(1, Math.ceil((post.body?.replace(/\s/g, '').leng
   }
 
   @media (max-width: 980px) {
-    .post-layout {
+    .post-layout,
+    .post[data-reading-width="wide"] .post-layout,
+    .post[data-reading-width="wide"][data-reading-toc="hidden"] .post-layout {
       grid-template-columns: minmax(0, var(--reading));
+    }
+
+    .post[data-reading-width="wide"] .post-header,
+    .post[data-reading-width="wide"] .post-footer {
+      width: min(calc(100% - 40px), var(--reading));
     }
 
     .post-aside {

@@ -1,7 +1,9 @@
 ---
 import { getCollection } from 'astro:content';
 import ProjectCard from '../components/ProjectCard.astro';
+import TypewriterText from '../components/TypewriterText.astro';
 import { PROJECTS } from '../data/projects';
+import { FEATURE_QUOTES, HERO_QUOTES } from '../data/quotes';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { isPublished, sortPosts } from '../lib/content';
 import { SITE } from '../lib/site';
@@ -15,8 +17,8 @@ const featuredProjects = PROJECTS.filter((project) => project.featured);
     <div class="shell hero__grid">
       <div class="hero__content">
         <p class="eyebrow">Personal space · Notes & projects</p>
-        <h1>探索、记录，<br />也保持好奇。</h1>
-        <p class="hero__lead">这里收录我的项目、技术阅读与学习过程。写下已经想清楚的，也保留仍在追问的问题。</p>
+        <h1>探索、记录，<br />也保持好奇</h1>
+        <p class="hero__lead"><TypewriterText phrases={HERO_QUOTES} label="首页随想" /></p>
         <div class="button-row">
           <a class="button button--primary" href="/blog/">开始阅读</a>
           <a class="button" href={SITE.github} target="_blank" rel="noreferrer">访问 GitHub</a>
@@ -41,24 +43,11 @@ const featuredProjects = PROJECTS.filter((project) => project.featured);
   <section class="quote-section shell" aria-label="引言">
     <span class="quote-section__mark" aria-hidden="true">“</span>
     <blockquote>
-      <p>真正有价值的记录，不是把答案写得多么确定，而是让后来的人看见：问题曾经怎样展开，判断又如何一步步形成。</p>
+      <p><TypewriterText phrases={FEATURE_QUOTES} label="今日语录" /></p>
     </blockquote>
   </section>
 
-  <section class="section shell">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Selected work</p>
-        <h2>精选项目</h2>
-      </div>
-      <a href="/projects/">查看全部 <span aria-hidden="true">→</span></a>
-    </div>
-    <div class="card-grid">
-      {featuredProjects.map((project) => <ProjectCard project={project} />)}
-    </div>
-  </section>
-
-  <section class="section shell">
+  <section class="section shell" data-home-section="writing">
     <div class="section-heading">
       <div>
         <p class="eyebrow">Recent writing</p>
@@ -89,6 +78,19 @@ const featuredProjects = PROJECTS.filter((project) => project.featured);
         </div>
       )
     }
+  </section>
+
+  <section class="section shell" data-home-section="projects">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Selected work</p>
+        <h2>精选项目</h2>
+      </div>
+      <a href="/projects/">查看全部 <span aria-hidden="true">→</span></a>
+    </div>
+    <div class="card-grid">
+      {featuredProjects.map((project) => <ProjectCard project={project} />)}
+    </div>
   </section>
 
   <script>
@@ -139,6 +141,7 @@ const featuredProjects = PROJECTS.filter((project) => project.featured);
 
   .hero__lead {
     max-width: 610px;
+    min-height: 3.5em;
     margin: 28px 0 32px;
     color: var(--muted);
     font-size: clamp(1rem, 2vw, 1.15rem);
@@ -237,6 +240,7 @@ const featuredProjects = PROJECTS.filter((project) => project.featured);
   }
 
   blockquote p {
+    min-height: 5.1em;
     margin: 0;
     color: var(--text-strong);
     font-family: var(--font-serif);
@@ -324,10 +328,13 @@ const featuredProjects = PROJECTS.filter((project) => project.featured);
       gap: 10px;
     }
 
+    blockquote p {
+      min-height: 8.5em;
+    }
+
     .home-post {
       grid-template-columns: 1fr;
       gap: 6px;
     }
   }
 </style>
-

@@ -1,0 +1,115 @@
+---
+import { TYPEWRITER_TIMING } from '../lib/typewriter';
+
+interface Props {
+  phrases: readonly string[];
+  label: string;
+  class?: string;
+}
+
+const { phrases, label, class: className } = Astro.props;
+const initialPhrase = phrases[0] ?? '';
+---
+
+<span
+  class:list={['typewriter', className]}
+  data-typewriter
+  data-phrases={JSON.stringify(phrases)}
+  data-timing={JSON.stringify(TYPEWRITER_TIMING)}
+  aria-label={label}
+>
+  <span data-typewriter-text>{initialPhrase}</span><span class="typewriter__cursor" aria-hidden="true"></span>
+</span>
+
+<script>
+  import { createTypewriterFrame, nextTypewriterFrame, shuffleWithoutImmediateRepeat } from '../lib/typewriter';
+
+  document.querySelectorAll<HTMLElement>('[data-typewriter]:not([data-typewriter-ready])').forEach((root) => {
+    root.dataset.typewriterReady = 'true';
+    const text = root.querySelector<HTMLElement>('[data-typewriter-text]');
+    if (!text) return;
+
+    const source = JSON.parse(root.dataset.phrases ?? '[]') as string[];
+    const timing = JSON.parse(root.dataset.timing ?? '{}') as {
+      typing: number; deleting: number; hold: number; between: number; jitter: number;
+    };
+    if (source.length === 0) return;
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let timer: number | undefined;
+    let phrases = shuffleWithoutImmediateRepeat(source);
+    let frame = createTypewriterFrame(phrases);
+
+    const render = () => {
+      text.textContent = Array.from(frame.phrases[frame.phraseIndex]).slice(0, frame.visibleCharacters).join('');
+    };
+
+    const schedule = () => {
+      const previousPhase = frame.phase;
+      frame = nextTypewriterFrame(frame);
+      render();
+
+      if (previousPhase === 'deleting' && frame.phase === 'typing' && frame.phraseIndex === 0) {
+        phrases = shuffleWithoutImmediateRepeat(source, frame.phrases.at(-1));
+        frame = createTypewriterFrame(phrases);
+      }
+
+      const delay = frame.phase === 'holding'
+        ? timing.hold
+        : previousPhase === 'holding'
+          ? timing.deleting
+          : frame.phase === 'deleting'
+            ? timing.deleting
+            : frame.visibleCharacters === 0
+              ? timing.between
+              : timing.typing + Math.round(Math.random() * timing.jitter);
+      timer = window.setTimeout(schedule, delay);
+    };
+
+    const start = () => {
+      window.clearTimeout(timer);
+      if (reducedMotion.matches) {
+        text.textContent = source[Math.floor(Math.random() * source.length)];
+        root.dataset.motion = 'reduced';
+        return;
+      }
+      root.dataset.motion = 'animated';
+      frame = createTypewriterFrame(shuffleWithoutImmediateRepeat(source, text.textContent ?? undefined));
+      text.textContent = '';
+      timer = window.setTimeout(schedule, timing.between);
+    };
+
+    start();
+    reducedMotion.addEventListener('change', start);
+    document.addEventListener('astro:before-swap', () => window.clearTimeout(timer), { once: true });
+  });
+</script>
+
+<style>
+  .typewriter {
+    display: inline;
+  }
+
+  .typewriter__cursor {
+    display: inline-block;
+    width: 1px;
+    height: 1em;
+    margin-left: 0.14em;
+    background: currentColor;
+    vertical-align: -0.08em;
+    animation: cursor-blink 900ms steps(1, end) infinite;
+    opacity: 0.75;
+  }
+
+  [data-motion="reduced"] .typewriter__cursor {
+    display: none;
+  }
+
+  @keyframes cursor-blink {
+    50% { opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .typewriter__cursor { display: none; }
+  }
+</style>

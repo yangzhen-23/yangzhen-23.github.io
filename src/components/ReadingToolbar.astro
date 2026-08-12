@@ -1,0 +1,230 @@
+<div class="reading-toolbar" data-reading-toolbar data-open="false">
+  <div class="reading-toolbar__panel" id="reading-toolbar-panel" data-reading-panel>
+    <button class="reading-toolbar__top" type="button" data-scroll-top aria-label="回到页面顶部">
+      <span aria-hidden="true">↑</span><span>顶部</span>
+    </button>
+
+    <div class="reading-toolbar__group" role="group" aria-label="正文字号">
+      <span>字号</span>
+      <button type="button" data-reading-setting="size" data-reading-value="small" aria-pressed="false">小</button>
+      <button type="button" data-reading-setting="size" data-reading-value="medium" aria-pressed="true">中</button>
+      <button type="button" data-reading-setting="size" data-reading-value="large" aria-pressed="false">大</button>
+    </div>
+
+    <div class="reading-toolbar__group" role="group" aria-label="正文宽度">
+      <span>版心</span>
+      <button type="button" data-reading-setting="width" data-reading-value="narrow" aria-pressed="true">窄</button>
+      <button type="button" data-reading-setting="width" data-reading-value="wide" aria-pressed="false">宽</button>
+    </div>
+
+    <div class="reading-toolbar__group reading-toolbar__group--toc" role="group" aria-label="文章目录">
+      <span>目录</span>
+      <button type="button" data-reading-setting="toc" data-reading-value="visible" aria-pressed="true">显示</button>
+      <button type="button" data-reading-setting="toc" data-reading-value="hidden" aria-pressed="false">隐藏</button>
+    </div>
+  </div>
+
+  <button
+    class="reading-toolbar__toggle"
+    type="button"
+    aria-label="打开阅读设置"
+    aria-expanded="false"
+    aria-controls="reading-toolbar-panel"
+    data-reading-toolbar-toggle
+  >
+    <span aria-hidden="true">阅</span>
+  </button>
+</div>
+
+<script>
+  import {
+    DEFAULT_READING_PREFERENCES,
+    applyReadingPreferenceChange,
+    parseReadingPreferences,
+    type ReadingPreferences,
+  } from '../lib/reading-preferences';
+
+  const STORAGE_KEY = 'yangzhen-reading-preferences';
+  const toolbar = document.querySelector<HTMLElement>('[data-reading-toolbar]');
+  const post = document.querySelector<HTMLElement>('.post[data-reading-size]');
+
+  if (toolbar && post) {
+    const toggle = toolbar.querySelector<HTMLButtonElement>('[data-reading-toolbar-toggle]');
+    let preferences: ReadingPreferences = { ...DEFAULT_READING_PREFERENCES };
+
+    try {
+      preferences = parseReadingPreferences(window.localStorage.getItem(STORAGE_KEY));
+    } catch {
+      preferences = { ...DEFAULT_READING_PREFERENCES };
+    }
+
+    const save = () => {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
+      } catch {
+        // The controls still work when storage is unavailable.
+      }
+    };
+
+    const render = () => {
+      post.dataset.readingSize = preferences.size;
+      post.dataset.readingWidth = preferences.width;
+      post.dataset.readingToc = preferences.toc;
+      toolbar.dataset.open = String(preferences.toolbarOpen);
+      toggle?.setAttribute('aria-expanded', String(preferences.toolbarOpen));
+      toggle?.setAttribute('aria-label', preferences.toolbarOpen ? '关闭阅读设置' : '打开阅读设置');
+
+      toolbar.querySelectorAll<HTMLButtonElement>('[data-reading-setting]').forEach((button) => {
+        const setting = button.dataset.readingSetting as 'size' | 'width' | 'toc';
+        button.setAttribute('aria-pressed', String(preferences[setting] === button.dataset.readingValue));
+      });
+    };
+
+    toggle?.addEventListener('click', () => {
+      preferences = applyReadingPreferenceChange(preferences, { toolbarOpen: !preferences.toolbarOpen });
+      render();
+      save();
+    });
+
+    toolbar.querySelectorAll<HTMLButtonElement>('[data-reading-setting]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const setting = button.dataset.readingSetting as 'size' | 'width' | 'toc';
+        preferences = applyReadingPreferenceChange(preferences, {
+          [setting]: button.dataset.readingValue,
+        } as Partial<ReadingPreferences>);
+        render();
+        save();
+      });
+    });
+
+    toolbar.querySelector<HTMLButtonElement>('[data-scroll-top]')?.addEventListener('click', () => {
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
+    });
+
+    render();
+  }
+</script>
+
+<style>
+  .reading-toolbar {
+    position: fixed;
+    right: max(20px, env(safe-area-inset-right));
+    bottom: max(20px, env(safe-area-inset-bottom));
+    z-index: 40;
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .reading-toolbar__toggle,
+  .reading-toolbar button {
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  .reading-toolbar__toggle {
+    display: grid;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    place-items: center;
+    border-radius: 50%;
+    background: linear-gradient(145deg, rgba(34, 46, 72, 0.98), rgba(17, 24, 39, 0.98));
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.36);
+    color: var(--accent-strong);
+    font-family: var(--font-serif);
+    font-weight: 700;
+  }
+
+  .reading-toolbar__panel {
+    display: grid;
+    width: min(310px, calc(100vw - 32px));
+    padding: 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    background: rgba(14, 20, 32, 0.96);
+    box-shadow: var(--shadow);
+    gap: 10px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(8px) scale(0.98);
+    transform-origin: bottom right;
+  }
+
+  [data-open="true"] .reading-toolbar__panel {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+  }
+
+  .reading-toolbar__top,
+  .reading-toolbar__group {
+    min-height: 38px;
+  }
+
+  .reading-toolbar__top {
+    display: flex;
+    padding: 0 12px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: rgba(135, 152, 255, 0.08);
+    gap: 7px;
+  }
+
+  .reading-toolbar__group {
+    display: grid;
+    grid-template-columns: 52px repeat(3, 1fr);
+    align-items: center;
+    gap: 5px;
+  }
+
+  .reading-toolbar__group:has(button:nth-of-type(2):last-child) {
+    grid-template-columns: 52px repeat(2, 1fr);
+  }
+
+  .reading-toolbar__group > span {
+    color: var(--muted-2);
+    font-size: 12px;
+  }
+
+  .reading-toolbar__group button {
+    min-height: 34px;
+    padding: 0 8px;
+    border-radius: 8px;
+    background: transparent;
+    font-size: 12px;
+  }
+
+  .reading-toolbar button:hover,
+  .reading-toolbar button[aria-pressed="true"] {
+    border-color: var(--accent);
+    background: rgba(135, 152, 255, 0.14);
+    color: var(--text-strong);
+  }
+
+  @media (max-width: 980px) {
+    .reading-toolbar__group--toc { display: none; }
+  }
+
+  @media (max-width: 560px) {
+    .reading-toolbar {
+      right: max(12px, env(safe-area-inset-right));
+      bottom: max(12px, env(safe-area-inset-bottom));
+    }
+
+    .reading-toolbar__toggle {
+      width: 42px;
+      height: 42px;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .reading-toolbar__panel {
+      transition: opacity 160ms ease, transform 160ms ease;
+    }
+  }
+</style>

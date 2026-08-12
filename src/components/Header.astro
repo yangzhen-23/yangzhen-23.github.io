@@ -2,8 +2,8 @@
 const pathname = Astro.url.pathname;
 const navItems = [
   { href: '/', label: '首页' },
-  { href: '/projects/', label: '项目' },
   { href: '/blog/', label: '博客' },
+  { href: '/projects/', label: '项目' },
   { href: '/archive/', label: '归档' },
   { href: '/about/', label: '关于' },
 ];
@@ -78,4 +78,3 @@ const isCurrent = (href: string) =>
     });
   }
 </script>
-

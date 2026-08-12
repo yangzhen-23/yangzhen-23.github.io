@@ -41,6 +41,31 @@ for (const htmlPath of collectHtml(root)) {
   if (!html.includes('data-particle-background')) errors.push(`missing particle background: ${relativePath}`);
 }
 
+const homepagePath = resolve(root, 'index.html');
+if (existsSync(homepagePath)) {
+  const homepage = readFileSync(homepagePath, 'utf8');
+  const navLinks = ['href="/"', 'href="/blog/"', 'href="/projects/"', 'href="/archive/"', 'href="/about/"', 'href="/search/"'];
+  const navPositions = navLinks.map((link) => homepage.indexOf(link));
+  if (navPositions.some((position) => position < 0) || navPositions.some((position, index) => index > 0 && position <= navPositions[index - 1])) {
+    errors.push('homepage navigation order is incorrect');
+  }
+  if ((homepage.match(/data-typewriter/g) ?? []).length < 2) errors.push('homepage requires two typewriter regions');
+  const homepageTitle = homepage.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1] ?? '';
+  if (homepageTitle.includes('也保持好奇。')) errors.push('homepage title still has terminal punctuation');
+  if (homepage.indexOf('data-home-section="writing"') > homepage.indexOf('data-home-section="projects"')) {
+    errors.push('latest writing must appear before selected projects');
+  }
+}
+
+const articlePath = resolve(root, 'blog/graduate-study-expectations/index.html');
+if (existsSync(articlePath)) {
+  const article = readFileSync(articlePath, 'utf8');
+  if (!article.includes('data-reading-toolbar')) errors.push('article is missing reading toolbar');
+  if (!article.includes('data-reading-size="medium"')) errors.push('article is missing default reading size');
+  if (!article.includes('data-reading-width="narrow"')) errors.push('article is missing default reading width');
+  if (!article.includes('data-reading-toc="visible"')) errors.push('article is missing default TOC visibility');
+}
+
 if (errors.length > 0) {
   console.error(`Build verification failed:\n- ${errors.join('\n- ')}`);
   process.exit(1);
